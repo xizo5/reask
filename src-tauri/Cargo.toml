@@ -11,7 +11,7 @@ panic = "abort"
 strip = true
 
 [build-dependencies]
-tauri-build = "2.7.4"
+tauri-build = { version = "2.7.4", features = [] }
 
 [dependencies]
 chrono = "0.4.45"

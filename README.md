@@ -35,7 +35,19 @@ Chromium，省下的那点被它吃回去了。想省内存别指望换 Tauri，
 
 ---
 
-## 运行
+## 下载安装
+
+不想编译的话，直接下安装包：
+
+**[Reask_1.0.0_x64-setup.exe](https://github.com/xizo5/reask/releases/latest)** · 2.47 MB · 不需要管理员权限
+
+装完不会弹窗——它是托盘程序，右下角出现青色圆环，按 `Ctrl+Shift+Q` 才开始用。
+
+需要 Windows x64 和系统自带的 WebView2（Win11 默认有）。
+
+---
+
+## 从源码运行
 
 ```bash
 cd src-tauri
