@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>回问</title>
+<link rel="stylesheet" href="app.css">
+<style>
+  .view{ display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+  .view[hidden]{ display: none; }
+
+  .q-large{
+    font-size: 16px; line-height: 1.55; font-weight: 500;
+    letter-spacing: -.005em; color: var(--text);
+    user-select: text; max-height: 96px; overflow-y: auto;
+  }
+  .q-meta{
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10.5px;
+    color: var(--text-4); margin-top: 2px;
+  }
+  .q-meta .sep{ color: var(--line-3); }
+
+  .flash{ color: var(--err) !important; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <span class="dot"></span>
+    <span class="title" id="barTitle">回问 <span>· 新问题</span></span>
+    <div class="right">
+      <button class="bar-link" id="btnHistory" type="button">全部问题</button>
+      <span id="hotkeyLabel">Ctrl+Shift+Q</span>
+      <span class="dash"><i></i><i></i><i></i></span>
+    </div>
+  </div>
+
+  <div class="body">
+    <!-- 记录 -->
+    <div class="view" id="viewCapture">
+      <div class="pending" id="pendingBar" hidden>
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="8" cy="8" r="6.2"/><path d="M8 5v3.6l2 1.4"/>
+        </svg>
+        <span><b id="pendingCount">0</b> 条问题还没填答案</span>
+        <span class="go">回填 →</span>
+      </div>
+
+      <textarea class="field field-main" id="qInput" placeholder="记下你此刻不懂的…" spellcheck="false"></textarea>
+
+      <div class="answer-block" id="answerBlock" hidden>
+        <div class="label">答案</div>
+        <textarea class="field" id="aInput" placeholder="一句话就行，出题时 AI 会压缩…" spellcheck="false"></textarea>
+      </div>
+
+      <button class="ghost-add" id="ghostAdd" type="button">
+        <span class="plus">+</span>
+        <span>已经知道答案？顺手写上</span>
+        <kbd>Tab</kbd>
+      </button>
+
+      <div class="chips" id="chips"></div>
+
+      <div class="foot">
+        <span class="hint" id="saveHint"><kbd>Ctrl</kbd><kbd>↵</kbd> 保存，答案以后再补</span>
+        <span class="hint spacer"><kbd>Esc</kbd> 关闭</span>
+      </div>
+    </div>
+
+    <!-- 回填 -->
+    <div class="view" id="viewRefill" hidden>
+      <div class="label">问题</div>
+      <p class="q-large" id="rfQuestion"></p>
+      <div class="q-meta" id="rfMeta"></div>
+
+      <textarea class="field" id="rfAnswer" style="flex:1;min-height:0" placeholder="随便写，贴原文也行…" spellcheck="false"></textarea>
+
+      <div class="foot">
+        <button class="btn btn-ghost" id="rfSkip" type="button">跳过</button>
+        <span class="spacer"></span>
+        <span class="hint"><kbd>Ctrl</kbd><kbd>↵</kbd></span>
+        <button class="btn btn-primary" id="rfSave" type="button">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="api.js"></script>
+<script src="capture.js"></script>
+</body>
+</html>

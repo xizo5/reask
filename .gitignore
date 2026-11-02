@@ -1,0 +1,14 @@
+# Rust 构建产物
+/src-tauri/target/
+
+# Tauri 生成的中间文件
+/src-tauri/gen/schemas/
+
+# 本地数据（数据库、备份）
+*.db
+*.db-journal
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db

@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>回问 · UI 原型</title>
+<style>
+/* ============================================================
+   设计令牌 —— 全站唯一色值来源
+   ============================================================ */
+:root{
+  /* 画布 */
+  --canvas:        #07080A;
+  --canvas-line:   #12151A;
+
+  /* 表面层级 */
+  --surface:       #12151A;   /* 窗口底 */
+  --surface-2:     #171B21;   /* 输入区 */
+  --surface-3:     #1D222A;   /* 悬停 / chip */
+  --surface-4:     #232A33;
+
+  /* 描边 */
+  --line:          #222831;
+  --line-2:        #2C333E;
+  --line-3:        #3A424F;
+
+  /* 文字 */
+  --text:          #E7EBF0;
+  --text-2:        #939CAB;
+  --text-3:        #5C6473;
+  --text-4:        #4D5563;
+
+  /* 强调 */
+  --accent:        #45C4B0;
+  --accent-soft:   rgba(69,196,176,.13);
+  --accent-line:   rgba(69,196,176,.42);
+
+  /* 语义 */
+  --ok:            #5FBF8F;
+  --ok-soft:       rgba(95,191,143,.12);
+  --warn:          #D8A657;
+  --warn-soft:     rgba(216,166,87,.12);
+  --err:           #D96C6C;
+  --err-soft:      rgba(217,108,108,.12);
+
+  /* 字体 */
+  --font: "Inter", "Segoe UI", system-ui, -apple-system, "Microsoft YaHei", sans-serif;
+  --mono: "Cascadia Code", "JetBrains Mono", "SF Mono", Consolas, monospace;
+
+  /* 间距刻度 4 基准 */
+  --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px;
+  --s5: 20px; --s6: 24px; --s7: 32px; --s8: 48px; --s9: 64px;
+
+  /* 圆角 */
+  --r-sm: 4px; --r-md: 6px; --r-lg: 10px;
+
+  /* 阴影层级 */
+  --sh-window: 0 32px 80px -28px rgba(0,0,0,.92), 0 2px 8px rgba(0,0,0,.5);
+  --sh-pop:    0 12px 32px -12px rgba(0,0,0,.8);
+
+  /* 动效 */
+  --ease: cubic-bezier(.2,.7,.3,1);
+  --dur: 140ms;
+}
+
+*{ box-sizing: border-box; margin: 0; padding: 0; }
+
+html{ background: var(--canvas); }
+
+body{
+  font-family: var(--font);
+  background: var(--canvas);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  padding: var(--s9) var(--s6) var(--s9);
+  /* 顶部一层极淡的冷光，给出画布纵深，不做网格以免线条穿过文字 */
+  background-image: radial-gradient(900px 520px at 50% -8%, #131820 0%, transparent 72%);
+  background-repeat: no-repeat;
+}
+
+.wrap{ max-width: 980px; margin: 0 auto; }
+
+/* ============================================================
+   文档头
+   ============================================================ */
+.doc-head{ margin-bottom: var(--s8); }
+
+.brand-row{
+  display: flex; align-items: baseline; gap: var(--s3);
+  margin-bottom: var(--s3);
+}
+.brand{
+  font-size: 28px; font-weight: 500; letter-spacing: .04em;
+  color: var(--text); line-height: 1.2;
+}
+.brand em{
+  font-style: normal; color: var(--accent);
+}
+.brand-en{
+  font-family: var(--mono); font-size: 10.5px; letter-spacing: .16em;
+  text-transform: uppercase; color: var(--text-4);
+}
+.doc-sub{
+  font-size: 13px; line-height: 1.7; color: var(--text-2);
+  max-width: 62ch;
+}
+
+/* 决策摘要条 */
+.spec-bar{
+  display: flex; flex-wrap: wrap; gap: var(--s2);
+  margin-top: var(--s5); padding-top: var(--s5);
+  border-top: 1px solid var(--line);
+}
+.spec{
+  display: flex; align-items: center; gap: 7px;
+  font-size: 11.5px; color: var(--text-3);
+  padding: 5px 10px;
+  background: rgba(20,24,30,.7);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+}
+.spec b{
+  color: var(--text-2); font-weight: 500;
+  font-family: var(--mono); font-size: 11px;
+}
+
+/* ============================================================
+   区块
+   ============================================================ */
+.block{
+  margin-bottom: var(--s9);
+}
+.block:last-of-type{ margin-bottom: 0; }
+
+.block-head{
+  display: flex; align-items: flex-start; gap: var(--s4);
+  margin-bottom: var(--s6);
+  padding-bottom: var(--s3);
+  border-bottom: 1px solid var(--line);
+}
+.block-num{
+  font-family: var(--mono); font-size: 11px;
+  color: var(--accent); opacity: .75;
+  padding-top: 3px; flex: none;
+  letter-spacing: .08em;
+}
+.block-title{
+  font-size: 15px; font-weight: 600; letter-spacing: -.01em;
+  margin-bottom: 3px;
+}
+.block-desc{
+  font-size: 12.5px; line-height: 1.6; color: var(--text-3);
+  max-width: 60ch;
+}
+.block-meta{
+  margin-left: auto; flex: none;
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--text-4); letter-spacing: .04em;
+  padding-top: 4px;
+}
+
+/* ============================================================
+   窗口外壳（模拟无边框桌面窗口）
+   ============================================================ */
+.window{
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-lg);
+  box-shadow: var(--sh-window);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  margin: 0 auto;
+}
+.win-sm{ width: 600px; height: 400px; }
+.win-md{ width: 600px; height: 460px; }
+.win-lg{ width: 820px; height: 560px; }
+
+/* 顶部拖拽条 */
+.win-bar{
+  height: 38px; flex: none;
+  display: flex; align-items: center; gap: var(--s2);
+  padding: 0 var(--s4);
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(180deg, #14181E, #11141A);
+}
+.win-dot{
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); opacity: .9; flex: none;
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.win-title{
+  font-size: 11.5px; font-weight: 500; color: var(--text-2);
+  letter-spacing: .01em;
+}
+.win-title span{ color: var(--text-4); font-family: var(--mono); font-size: 10.5px; }
+.win-right{
+  margin-left: auto; display: flex; align-items: center; gap: var(--s3);
+  font-size: 10.5px; color: var(--text-4); font-family: var(--mono);
+}
+.dots{ display: flex; gap: 5px; }
+.dots i{
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--surface-4); display: block;
+}
+
+/* 窗口主体 */
+.win-body{
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column;
+  padding: var(--s4) var(--s5);
+  gap: var(--s3);
+}
+
+/* ============================================================
+   通用组件
+   ============================================================ */
+
+/* 待回填提示条 */
+.pending{
+  display: flex; align-items: center; gap: var(--s2);
+  padding: 7px var(--s3);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--warn);
+  border-radius: var(--r-sm);
+  font-size: 12px; color: var(--text-2);
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+.pending:hover{ background: var(--surface-3); border-color: var(--line-3); }
+.pending b{ color: var(--text); font-weight: 500; }
+.pending .go{
+  margin-left: auto; color: var(--text-3);
+  font-family: var(--mono); font-size: 11px;
+  display: flex; align-items: center; gap: 4px;
+}
+.pending:hover .go{ color: var(--accent); }
+
+/* 标签 */
+.label{
+  font-size: 10.5px; font-weight: 500;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--text-4);
+  display: flex; align-items: center; gap: var(--s2);
+}
+.label::after{
+  content: ""; flex: 1; height: 1px;
+  background: linear-gradient(90deg, var(--line), transparent 72%);
+}
+
+/* 输入区 */
+.field{
+  width: 100%; resize: none;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--r-md);
+  padding: var(--s3) var(--s4);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px; line-height: 1.65;
+  outline: none;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+}
+.field::placeholder{ color: var(--text-4); }
+.field:hover{ border-color: var(--line-3); }
+.field:focus{
+  background: #151920;
+  border-color: var(--accent-line);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.field-main{ flex: 1; font-size: 15px; }
+
+/* 上下文 chip */
+.chips{ display: flex; flex-wrap: wrap; gap: var(--s2); }
+.chip{
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px var(--s2) 4px 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-sm);
+  font-size: 11px; color: var(--text-3);
+  font-family: var(--mono);
+  white-space: nowrap;
+}
+.chip svg{ opacity: .7; flex: none; }
+.chip .k{ color: var(--text-4); }
+
+/* 底部操作条 */
+.foot{
+  display: flex; align-items: center; gap: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+  flex: none;
+}
+.hint{
+  font-size: 11px; color: var(--text-3);
+  display: flex; align-items: center; gap: 6px;
+}
+.hint kbd{
+  font-family: var(--mono); font-size: 10px;
+  padding: 2px 5px; border-radius: 3px;
+  background: var(--surface-3);
+  border: 1px solid var(--line-2);
+  border-bottom-width: 2px;
+  color: var(--text-2);
+}
+.spacer{ margin-left: auto; }
+
+/* 按钮 */
+.btn{
+  font-family: var(--font); font-size: 12.5px; font-weight: 500;
+  padding: 6px 14px; border-radius: var(--r-md);
+  border: 1px solid var(--line-3);
+  background: var(--surface-3);
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+}
+.btn:hover{ background: var(--surface-4); border-color: #454E5C; }
+.btn:active{ transform: translateY(.5px); }
+.btn:focus-visible{ outline: 2px solid var(--accent-line); outline-offset: 2px; }
+
+.btn-primary{
+  background: var(--accent); color: #06231F;
+  border-color: var(--accent); font-weight: 600;
+}
+.btn-primary:hover{ background: #52D6C0; border-color: #52D6C0; }
+
+.btn-ghost{
+  background: transparent; border-color: transparent; color: var(--text-3);
+}
+.btn-ghost:hover{ background: var(--surface-3); color: var(--text-2); border-color: transparent; }
+
+.btn:disabled{
+  opacity: .38; cursor: not-allowed;
+  background: var(--surface-2); color: var(--text-3);
+  border-color: var(--line-2);
+}
+
+/* ============================================================
+   Screen 1 · 记录态
+   ============================================================ */
+.record-body{ gap: var(--s3); }
+
+/* ============================================================
+   Screen 2 · 回填态
+   ============================================================ */
+.q-large{
+  font-size: 16px; line-height: 1.55; color: var(--text);
+  letter-spacing: -.005em; font-weight: 500;
+}
+.q-meta{
+  display: flex; align-items: center; gap: var(--s2);
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--text-4); margin-top: 5px;
+}
+.q-meta .sep{ color: var(--line-3); }
+.counter{
+  display: flex; align-items: center; gap: 5px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--text-4);
+}
+.counter b{ color: var(--text-2); font-weight: 500; }
+
+/* ============================================================
+   Screen 3 · 日卷
+   ============================================================ */
+.progress-track{
+  height: 2px; background: var(--line);
+  border-radius: 2px; overflow: hidden; flex: none;
+}
+.progress-fill{
+  height: 100%; width: 37.5%;
+  background: var(--accent); border-radius: 2px;
+  transition: width 240ms var(--ease);
+}
+.quiz-top{
+  display: flex; align-items: center; gap: var(--s4);
+  flex: none;
+}
+.quiz-num{
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-4); letter-spacing: .1em;
+  flex: none; padding-top: 4px;
+}
+.quiz-q{
+  font-size: 19px; line-height: 1.5;
+  font-weight: 500; letter-spacing: -.015em;
+  color: var(--text);
+  max-width: 46ch;
+}
+.answer-area{ flex: 1; min-height: 0; display: flex; }
+.answer-area .field{ flex: 1; font-size: 14px; }
+
+/* ============================================================
+   Screen 4 · 判分
+   ============================================================ */
+.score-head{
+  display: flex; align-items: center; gap: var(--s6);
+  flex: none;
+  padding-bottom: var(--s1);
+}
+.score-main{
+  display: flex; align-items: baseline; gap: var(--s2);
+}
+.score-num{
+  font-family: var(--mono); font-size: 30px; font-weight: 500;
+  color: var(--text); letter-spacing: -.02em; line-height: 1;
+}
+.score-unit{ font-size: 12px; color: var(--text-3); }
+.score-tags{ display: flex; gap: var(--s2); }
+.tag{
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 8px; border-radius: var(--r-sm);
+  font-size: 11px; font-weight: 500;
+  border: 1px solid transparent;
+}
+.tag-ok{ color: var(--ok); background: var(--ok-soft); border-color: rgba(95,191,143,.25); }
+.tag-warn{ color: var(--warn); background: var(--warn-soft); border-color: rgba(216,166,87,.25); }
+.tag-err{ color: var(--err); background: var(--err-soft); border-color: rgba(217,108,108,.25); }
+
+.review-list{
+  flex: 1; min-height: 0; overflow-y: auto;
+  margin: 0 calc(var(--s2) * -1);
+  padding: 0 var(--s2);
+  display: flex; flex-direction: column;
+}
+.review{
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: var(--s2) var(--s4);
+  align-items: start;
+}
+.review:last-child{ border-bottom: none; }
+.review-q{
+  font-size: 13px; color: var(--text); line-height: 1.5;
+  font-weight: 500;
+}
+.review-q .idx{
+  font-family: var(--mono); font-size: 10.5px;
+  color: var(--text-4); margin-right: 8px;
+}
+.review-body{
+  grid-column: 1 / -1;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: var(--s4);
+  padding-left: 28px;
+  margin-top: 2px;
+}
+.qa-col .qa-label{
+  font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-3); margin-bottom: 5px; font-weight: 500;
+}
+.qa-col p{
+  font-size: 12px; line-height: 1.65; color: var(--text-2);
+}
+.qa-col.is-answer p{ color: #B2BAC7; }
+.qa-col.is-answer .qa-label{ color: var(--accent); opacity: .95; }
+
+/* ============================================================
+   Screen 5 · 设置
+   ============================================================ */
+.setting{
+  display: flex; align-items: center; gap: var(--s4);
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.setting:last-of-type{ border-bottom: none; }
+.setting-label{
+  font-size: 12.5px; color: var(--text-2); flex: none; width: 96px;
+}
+.setting-value{ margin-left: auto; display: flex; align-items: center; gap: var(--s2); }
+.kv{
+  font-family: var(--mono); font-size: 12px; color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  padding: 5px 10px; border-radius: var(--r-sm);
+}
+.kv.muted{ color: var(--text-3); font-size: 11px; }
+.toggle{
+  width: 30px; height: 17px; border-radius: 9px;
+  background: var(--accent); position: relative;
+  flex: none; cursor: pointer;
+}
+.toggle::after{
+  content: ""; position: absolute; top: 2px; right: 2px;
+  width: 13px; height: 13px; border-radius: 50%;
+  background: #06231F;
+}
+.setting-note{
+  margin-top: auto; padding-top: var(--s3);
+  font-size: 11px; line-height: 1.65; color: var(--text-3);
+  border-top: 1px solid var(--line);
+}
+
+/* ============================================================
+   令牌展示
+   ============================================================ */
+.tokens{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  gap: 10px var(--s5);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--line);
+  margin-top: var(--s8);
+}
+.token{
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--mono); font-size: 10.5px; color: var(--text-3);
+}
+.token i{
+  width: 11px; height: 11px; border-radius: 3px;
+  border: 1px solid rgba(255,255,255,.08); flex: none;
+}
+
+/* scrollbar */
+.review-list::-webkit-scrollbar{ width: 8px; }
+.review-list::-webkit-scrollbar-track{ background: transparent; }
+.review-list::-webkit-scrollbar-thumb{
+  background: var(--surface-4); border-radius: 4px;
+  border: 2px solid var(--surface);
+}
+
+/* ============================================================
+   记录态：可选答案区 + 状态切换
+   ============================================================ */
+.seg{
+  display: inline-flex; gap: 2px; padding: 2px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+  margin-left: auto; flex: none;
+}
+.seg-btn{
+  font-family: var(--font); font-size: 11.5px;
+  color: var(--text-3); background: transparent;
+  border: none; padding: 5px 12px; border-radius: 4px;
+  cursor: pointer;
+  transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.seg-btn:hover{ color: var(--text-2); }
+.seg-btn.is-active{ background: var(--surface-4); color: var(--text); }
+.seg-btn:focus-visible{ outline: 2px solid var(--accent-line); outline-offset: 1px; }
+
+#recordFrame{ transition: height 180ms var(--ease); }
+
+/* 虚线可选项 */
+.ghost-add{
+  display: flex; align-items: center; gap: 8px;
+  padding: 9px var(--s3);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--r-md);
+  background: transparent;
+  font-family: var(--font); font-size: 12px;
+  color: var(--text-3); text-align: left; width: 100%;
+  cursor: pointer; flex: none;
+  transition: border-color var(--dur) var(--ease), background var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+.ghost-add:hover{
+  border-color: var(--accent-line);
+  background: var(--accent-soft);
+  color: var(--text-2);
+}
+.ghost-add:focus-visible{ outline: 2px solid var(--accent-line); outline-offset: 2px; }
+.ghost-add[hidden]{ display: none; }
+.ghost-add .plus{
+  width: 13px; height: 13px; flex: none;
+  display: grid; place-items: center;
+  color: var(--accent); font-size: 14px; line-height: 1;
+}
+.ghost-add kbd{
+  font-family: var(--mono); font-size: 10px; margin-left: auto;
+  padding: 2px 5px; border-radius: 3px;
+  background: var(--surface-3); border: 1px solid var(--line-2);
+  border-bottom-width: 2px; color: var(--text-3);
+}
+
+/* 答案区 */
+.answer-block{
+  display: flex; flex-direction: column; gap: 6px;
+  flex: 1.15; min-height: 0;
+}
+.answer-block[hidden]{ display: none; }
+.answer-block .field{ flex: 1; min-height: 0; font-size: 13.5px; }
+
+.inline-kbd{
+  font-family: var(--mono); font-size: 10.5px;
+  padding: 1px 4px; border-radius: 3px;
+  background: var(--surface-3); border: 1px solid var(--line-2);
+  color: var(--text-2);
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition: none !important; animation: none !important; }
+}
+@media (max-width: 900px){
+  body{ padding: var(--s6) var(--s3); overflow-x: hidden; }
+  .wrap{ max-width: 100%; }
+
+  .win-sm, .win-md, .win-lg{ width: 100%; height: auto !important; }
+  .win-bar .win-right{ display: none; }
+  .win-body{ padding: var(--s3) var(--s4); }
+  .field-main{ min-height: 140px; flex: none; }
+  .answer-area .field{ min-height: 160px; flex: none; }
+
+  .block-head{ flex-wrap: wrap; gap: var(--s2) var(--s3); }
+  .block-meta{ display: none; }
+
+  .spec{ flex-wrap: wrap; }
+  .spec b{ white-space: normal; }
+
+  .pending{ flex-wrap: wrap; }
+  .pending .go{ margin-left: 0; }
+
+  .score-head{ flex-wrap: wrap; gap: var(--s3); }
+  .review-body{ grid-template-columns: 1fr; gap: var(--s2); padding-left: 0; }
+  .qa-col p{ font-size: 11.5px; }
+
+  .setting{ flex-wrap: wrap; gap: var(--s2); }
+  .setting-value{ margin-left: 0; flex-wrap: wrap; }
+  .kv{ word-break: break-all; }
+
+  .tokens{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .foot{ flex-wrap: wrap; gap: var(--s2); }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ 文档头 ============ -->
+  <header class="doc-head">
+    <div class="brand-row">
+      <h1 class="brand">回<em>问</em></h1>
+      <span class="brand-en">Reask · UI Prototype</span>
+    </div>
+    <p class="doc-sub">
+      按一个键把不懂的问题扔进去，找到答案后填回来，每天被动回答一遍自己的问题。
+      界面只做三件事：接住那句话、让你补答案、把卷子递到你面前。不做多余装饰。
+    </p>
+    <div class="spec-bar">
+      <span class="spec">热键 <b>Ctrl+Shift+Q</b></span>
+      <span class="spec">日卷 <b>当天问题</b></span>
+      <span class="spec">大杂烩 <b>每 3 天 · 上限 20 条</b></span>
+      <span class="spec">未填答案 <b>不进卷</b></span>
+      <span class="spec">存储 <b>本地 SQLite</b></span>
+      <span class="spec">形态 <b>纯桌面 · 无账号</b></span>
+    </div>
+  </header>
+
+  <!-- ============ 01 记录 ============ -->
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">01</span>
+      <div>
+        <h2 class="block-title">记录 · 热键唤起</h2>
+        <p class="block-desc">
+          光标已在输入框，直接打字。当时就知道答案的，按 <kbd class="inline-kbd">Tab</kbd> 展开答案栏顺手写上——
+          保存后直接是一张完整卡片，不用再回填。收起 600×400，展开 600×520（窗口跟着长高）。
+        </p>
+      </div>
+      <div class="seg" role="group" aria-label="切换记录状态">
+        <button class="seg-btn" type="button" data-state="closed">还不知道</button>
+        <button class="seg-btn is-active" type="button" data-state="open">已经知道</button>
+      </div>
+    </div>
+
+    <div class="window win-sm" id="recordFrame" style="height:520px">
+      <div class="win-bar">
+        <span class="win-dot"></span>
+        <span class="win-title">回问 <span>· 新问题</span></span>
+        <span class="win-right">
+          <span>Ctrl+Shift+Q</span>
+          <span class="dots"><i></i><i></i><i></i></span>
+        </span>
+      </div>
+      <div class="win-body record-body">
+        <div class="pending">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="6.2"/><path d="M8 5v3.6l2 1.4"/>
+          </svg>
+          <span><b>2</b> 条问题还没填答案</span>
+          <span class="go">回填 →</span>
+        </div>
+
+        <textarea class="field field-main" placeholder="记下你此刻不懂的…" spellcheck="false">为什么这个报错只在 Docker 里出现？</textarea>
+
+        <div class="answer-block" id="answerBlock">
+          <div class="label">答案</div>
+          <textarea class="field" placeholder="一句话就行，出题时 AI 会压缩…" spellcheck="false">容器里没有 host 网络，连不上宿主机的 MySQL。要么 --network host，要么把 127.0.0.1 改成宿主机内网 IP。</textarea>
+        </div>
+
+        <button class="ghost-add" id="ghostAdd" type="button" hidden>
+          <span class="plus">+</span>
+          <span>已经知道答案？顺手写上</span>
+          <kbd>Tab</kbd>
+        </button>
+
+        <div class="chips">
+          <span class="chip">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="12" height="10" rx="1.5"/><path d="M2 6h12"/></svg>
+            <span class="k">来源</span> VSCode — main.ts
+          </span>
+          <span class="chip">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="2.5" width="10" height="11" rx="1.5"/><path d="M5.5 6h5M5.5 9h3"/></svg>
+            <span class="k">剪贴板</span> 12 行
+          </span>
+        </div>
+
+        <div class="foot">
+          <span class="hint" id="saveHint"><kbd>Ctrl</kbd><kbd>↵</kbd> 保存并入复习池</span>
+          <span class="hint spacer"><kbd>Esc</kbd> 关闭</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 02 回填 ============ -->
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">02</span>
+      <div>
+        <h2 class="block-title">回填 · 当时没答案的</h2>
+        <p class="block-desc">只有记录时留白的那些才走这条路。同一套热键，切到回填态。答案怎么写都行，可以贴一大段，出题时 AI 自己压缩成一道可判分的题。</p>
+      </div>
+      <span class="block-meta">600 × 400 · 无边框</span>
+    </div>
+
+    <div class="window win-sm">
+      <div class="win-bar">
+        <span class="win-dot"></span>
+        <span class="win-title">回问 <span>· 回填</span></span>
+        <span class="win-right">
+          <span class="counter"><b>1</b> / 2</span>
+          <span class="dots"><i></i><i></i><i></i></span>
+        </span>
+      </div>
+      <div class="win-body">
+        <div>
+          <div class="label">问题</div>
+          <p class="q-large" style="margin-top:8px">为什么这个报错只在 Docker 里出现？</p>
+          <div class="q-meta">
+            <span>VSCode — main.ts</span>
+            <span class="sep">/</span>
+            <span>11-02 10:14</span>
+          </div>
+        </div>
+
+        <div class="label">答案</div>
+        <textarea class="field" style="flex:1;min-height:0" placeholder="随便写，贴原文也行…" spellcheck="false">容器里没有 host 网络，连不上宿主机的 MySQL。要么 --network host，要么把 127.0.0.1 改成宿主机内网 IP。</textarea>
+
+        <div class="foot">
+          <button class="btn btn-ghost">跳过</button>
+          <span class="spacer"></span>
+          <span class="hint" style="margin-right:4px"><kbd>Ctrl</kbd><kbd>↵</kbd></span>
+          <button class="btn btn-primary">保存并下一个</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 03 日卷 ============ -->
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">03</span>
+      <div>
+        <h2 class="block-title">日卷 · 到点提醒</h2>
+        <p class="block-desc">默认 21:00 推通知，点开进卷。一题一屏，答案写完 Ctrl+Enter 直接翻页，不做多余确认。</p>
+      </div>
+      <span class="block-meta">820 × 520 · 无边框</span>
+    </div>
+
+    <div class="window win-lg" style="height:520px">
+      <div class="win-bar">
+        <span class="win-dot"></span>
+        <span class="win-title">日卷 <span>· 11 月 2 日</span></span>
+        <span class="win-right">
+          <span class="counter"><b>3</b> / 8</span>
+          <span class="dots"><i></i><i></i><i></i></span>
+        </span>
+      </div>
+      <div class="win-body">
+        <div class="progress-track"><div class="progress-fill"></div></div>
+
+        <div class="quiz-top" style="margin-top:12px">
+          <span class="quiz-num">03</span>
+          <p class="quiz-q">git rebase 到底做了什么，和 merge 的区别在哪？</p>
+        </div>
+
+        <div class="answer-area">
+          <textarea class="field" placeholder="写你的答案，想到多少写多少…" spellcheck="false"></textarea>
+        </div>
+
+        <div class="foot">
+          <span class="hint"><kbd>Ctrl</kbd><kbd>↵</kbd> 提交并下一题</span>
+          <span class="spacer"></span>
+          <button class="btn btn-ghost">这题跳过</button>
+          <button class="btn btn-primary">提交</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 04 判分 ============ -->
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">04</span>
+      <div>
+        <h2 class="block-title">判分 · 对完就散</h2>
+        <p class="block-desc">AI 判三档：对 / 部分对 / 错。你的答案和标准答案并排，差在哪一眼看见。错的题下次大杂烩优先抽。</p>
+      </div>
+      <span class="block-meta">820 × 640 · 无边框</span>
+    </div>
+
+    <div class="window win-lg" style="height:640px">
+      <div class="win-bar">
+        <span class="win-dot"></span>
+        <span class="win-title">判分 <span>· 11 月 2 日 日卷</span></span>
+        <span class="win-right"><span class="dots"><i></i><i></i><i></i></span></span>
+      </div>
+      <div class="win-body">
+        <div class="score-head">
+          <div class="score-main">
+            <span class="score-num">6</span>
+            <span class="score-unit">/ 8 答对</span>
+          </div>
+          <div class="score-tags">
+            <span class="tag tag-ok">
+              <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 8.5l3.4 3.4L13 5"/></svg>
+              对 6
+            </span>
+            <span class="tag tag-warn">
+              <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v6"/></svg>
+              部分对 1
+            </span>
+            <span class="tag tag-err">
+              <svg width="9" height="9" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+              错 1
+            </span>
+          </div>
+          <span class="spacer"></span>
+          <button class="btn">收起详情</button>
+        </div>
+
+        <div class="review-list">
+          <div class="review">
+            <p class="review-q"><span class="idx">01</span>为什么这个报错只在 Docker 里出现？</p>
+            <span class="tag tag-ok">对</span>
+            <div class="review-body">
+              <div class="qa-col">
+                <div class="qa-label">你的答案</div>
+                <p>容器没 host 网络，连不上宿主机 MySQL，要改 network 或者 IP。</p>
+              </div>
+              <div class="qa-col is-answer">
+                <div class="qa-label">标准答案</div>
+                <p>容器默认独立网络命名空间，127.0.0.1 指向容器自身。需 --network host 或改用宿主机内网 IP。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="review">
+            <p class="review-q"><span class="idx">02</span>git rebase 到底做了什么，和 merge 的区别在哪？</p>
+            <span class="tag tag-warn">部分对</span>
+            <div class="review-body">
+              <div class="qa-col">
+                <div class="qa-label">你的答案</div>
+                <p>把当前分支的提交重新放到目标分支后面，历史更直。merge 会多一个合并提交。</p>
+              </div>
+              <div class="qa-col is-answer">
+                <div class="qa-label">标准答案</div>
+                <p>rebase 逐个重放提交并生成新 commit hash，历史线性但改写历史，已推送的分支要慎用。merge 保留分叉，产生 merge commit，不改写历史。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="review">
+            <p class="review-q"><span class="idx">03</span>policy 在代码语境里通常指什么？</p>
+            <span class="tag tag-ok">对</span>
+            <div class="review-body">
+              <div class="qa-col">
+                <div class="qa-label">你的答案</div>
+                <p>一套约束规则，比如重试策略、权限策略。</p>
+              </div>
+              <div class="qa-col is-answer">
+                <div class="qa-label">标准答案</div>
+                <p>预定义的约束或规则集，如 retry policy、IAM policy，通常声明式配置而非硬编码。</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="review">
+            <p class="review-q"><span class="idx">04</span>容器里连不上宿主机 MySQL，怎么改最稳？</p>
+            <span class="tag tag-err">错</span>
+            <div class="review-body">
+              <div class="qa-col">
+                <div class="qa-label">你的答案</div>
+                <p>把 127.0.0.1 改成 localhost 就行。</p>
+              </div>
+              <div class="qa-col is-answer">
+                <div class="qa-label">标准答案</div>
+                <p>localhost 在容器内仍指向容器自身，改了没用。要用宿主机内网 IP、--network host，或 host.docker.internal（Linux 需额外映射）。</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="foot">
+          <span class="hint">2 道题已加入下次大杂烩</span>
+          <span class="spacer"></span>
+          <button class="btn btn-primary">完成</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 05 设置 ============ -->
+  <section class="block">
+    <div class="block-head">
+      <span class="block-num">05</span>
+      <div>
+        <h2 class="block-title">设置 · 全部可改</h2>
+        <p class="block-desc">热键、出卷时间、大杂烩间隔、模型、数据位置。没有账号，没有云同步，数据就是一个本地文件。</p>
+      </div>
+      <span class="block-meta">600 × 460 · 无边框</span>
+    </div>
+
+    <div class="window win-md">
+      <div class="win-bar">
+        <span class="win-dot"></span>
+        <span class="win-title">设置</span>
+        <span class="win-right"><span class="dots"><i></i><i></i><i></i></span></span>
+      </div>
+      <div class="win-body">
+        <div class="setting">
+          <span class="setting-label">全局热键</span>
+          <span class="setting-value">
+            <span class="kv">Ctrl + Shift + Q</span>
+            <button class="btn">录制</button>
+          </span>
+        </div>
+        <div class="setting">
+          <span class="setting-label">日卷时间</span>
+          <span class="setting-value"><span class="kv">21:00</span></span>
+        </div>
+        <div class="setting">
+          <span class="setting-label">大杂烩</span>
+          <span class="setting-value">
+            <span class="kv">每 3 天</span>
+            <span class="kv muted">上限 20 条</span>
+          </span>
+        </div>
+        <div class="setting">
+          <span class="setting-label">模型</span>
+          <span class="setting-value"><span class="kv">deepseek-chat</span></span>
+        </div>
+        <div class="setting">
+          <span class="setting-label">数据位置</span>
+          <span class="setting-value">
+            <span class="kv muted">%APPDATA%\reask\reask.db</span>
+            <button class="btn">打开</button>
+          </span>
+        </div>
+        <div class="setting">
+          <span class="setting-label">每日备份</span>
+          <span class="setting-value"><span class="toggle" role="switch" aria-checked="true" tabindex="0"></span></span>
+        </div>
+
+        <div class="setting-note">
+          未填答案的问题超过 7 天自动折叠进「已放弃」，不删、不提醒、不考，可搜索找回。
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 令牌 ============ -->
+  <div class="tokens">
+    <span class="token"><i style="background:#12151A"></i>surface #12151A</span>
+    <span class="token"><i style="background:#171B21"></i>field #171B21</span>
+    <span class="token"><i style="background:#2C333E"></i>line #2C333E</span>
+    <span class="token"><i style="background:#E7EBF0"></i>text #E7EBF0</span>
+    <span class="token"><i style="background:#939CAB"></i>text-2 #939CAB</span>
+    <span class="token"><i style="background:#45C4B0"></i>accent #45C4B0</span>
+    <span class="token"><i style="background:#5FBF8F"></i>ok #5FBF8F</span>
+    <span class="token"><i style="background:#D8A657"></i>warn #D8A657</span>
+    <span class="token"><i style="background:#D96C6C"></i>err #D96C6C</span>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var frame  = document.getElementById('recordFrame');
+  var block  = document.getElementById('answerBlock');
+  var ghost  = document.getElementById('ghostAdd');
+  var hint   = document.getElementById('saveHint');
+  var btns   = document.querySelectorAll('.seg-btn');
+
+  function setState(state){
+    var open = state === 'open';
+    block.hidden = !open;
+    ghost.hidden = open;
+    frame.style.height = open ? '520px' : '400px';
+    hint.innerHTML = open
+      ? '<kbd>Ctrl</kbd><kbd>↵</kbd> 保存并入复习池'
+      : '<kbd>Ctrl</kbd><kbd>↵</kbd> 保存，答案以后再补';
+    btns.forEach(function(b){
+      b.classList.toggle('is-active', b.dataset.state === state);
+    });
+  }
+
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){ setState(b.dataset.state); });
+  });
+  ghost.addEventListener('click', function(){ setState('open'); });
+
+  document.addEventListener('keydown', function(e){
+    var onQuestion = document.activeElement.classList.contains('field-main');
+    if(e.key === 'Tab' && block.hidden && onQuestion){
+      e.preventDefault();
+      setState('open');
+      block.querySelector('textarea').focus();
+    }
+  });
+})();
+</script>
+</body>
+</html>

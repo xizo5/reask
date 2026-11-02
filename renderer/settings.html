@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>设置 · 回问</title>
+<link rel="stylesheet" href="app.css">
+<style>
+  .list{
+    flex: 1; min-height: 0; overflow-y: auto;
+    margin: 0 -8px; padding: 0 8px;
+  }
+  .row{
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 0; border-bottom: 1px solid var(--line);
+  }
+  .row:last-child{ border-bottom: none; }
+  .row .lb{
+    font-size: 12.5px; color: var(--text-2); flex: none; width: 92px;
+  }
+  .row .hintline{
+    font-size: 11px; color: var(--text-4); margin-top: 3px;
+  }
+  .row .ctl{
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    flex-wrap: wrap; justify-content: flex-end; min-width: 0;
+  }
+
+  .inp{
+    font-family: var(--mono); font-size: 12px;
+    background: var(--surface-2);
+    border: 1px solid var(--line-2);
+    border-radius: var(--r-sm);
+    color: var(--text); padding: 5px 10px;
+    outline: none; user-select: text;
+    transition: border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease);
+  }
+  .inp:hover{ border-color: var(--line-3); }
+  .inp:focus{ border-color: var(--accent-line); box-shadow: 0 0 0 3px var(--accent-soft); }
+  .inp.time{ width: 92px; }
+  .inp.num{ width: 68px; text-align: center; }
+  .inp.wide{ width: 240px; }
+  .inp.pwd{ width: 240px; }
+
+  .switch{
+    width: 30px; height: 17px; border-radius: 9px;
+    background: var(--surface-4); position: relative;
+    cursor: pointer; flex: none; border: none;
+    transition: background var(--dur) var(--ease);
+  }
+  .switch::after{
+    content: ""; position: absolute; top: 2px; left: 2px;
+    width: 13px; height: 13px; border-radius: 50%;
+    background: var(--text-3); transition: all var(--dur) var(--ease);
+  }
+  .switch[aria-checked="true"]{ background: var(--accent); }
+  .switch[aria-checked="true"]::after{ left: 15px; background: #06231F; }
+
+  .kv{
+    font-family: var(--mono); font-size: 11px; color: var(--text-3);
+    background: var(--surface-2); border: 1px solid var(--line-2);
+    padding: 5px 10px; border-radius: var(--r-sm);
+    max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .note{
+    font-size: 11px; line-height: 1.65; color: var(--text-3);
+    padding: 3px 0 0;
+  }
+  .saved{
+    font-size: 11px; color: var(--ok); opacity: 0;
+    transition: opacity 200ms var(--ease);
+  }
+  .saved.on{ opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <span class="dot"></span>
+    <span class="title">设置</span>
+    <div class="right">
+      <span class="saved" id="saved">已保存</span>
+      <span class="dash"><i></i><i></i><i></i></span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="list">
+      <div class="row">
+        <span class="lb">全局热键</span>
+        <div class="ctl">
+          <span class="kv" id="hotkeyView">Ctrl+Shift+Q</span>
+          <button class="btn" id="btnRecord" type="button">录制</button>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="lb">日卷时间</span>
+        <div class="ctl"><input class="inp time" type="time" id="quizTime"></div>
+      </div>
+
+      <div class="row">
+        <span class="lb">大杂烩</span>
+        <div class="ctl">
+          <span style="font-size:12px;color:var(--text-3)">每</span>
+          <input class="inp num" type="number" min="1" max="30" id="mixedIntervalDays">
+          <span style="font-size:12px;color:var(--text-3)">天，最多</span>
+          <input class="inp num" type="number" min="5" max="50" id="mixedLimit">
+          <span style="font-size:12px;color:var(--text-3)">题</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <span class="lb">待回填保留</span>
+        <div class="ctl">
+          <input class="inp num" type="number" min="1" max="60" id="pendingDays">
+          <span style="font-size:12px;color:var(--text-3)">天，超期自动归档</span>
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="min-width:0">
+          <div class="lb" style="width:auto">API Key</div>
+          <div class="hintline">不填也能用，判分走离线关键词比对</div>
+        </div>
+        <div class="ctl"><input class="inp pwd" type="password" id="apiKey" placeholder="sk-..."></div>
+      </div>
+
+      <div class="row">
+        <span class="lb">接口地址</span>
+        <div class="ctl"><input class="inp wide" type="text" id="baseUrl"></div>
+      </div>
+
+      <div class="row">
+        <span class="lb">模型</span>
+        <div class="ctl"><input class="inp wide" type="text" id="model"></div>
+      </div>
+
+      <div class="row">
+        <span class="lb">每日备份</span>
+        <div class="ctl">
+          <button class="switch" id="autoBackup" role="switch" aria-checked="true" type="button"></button>
+        </div>
+      </div>
+
+      <div class="row">
+        <div style="min-width:0;flex:1">
+          <div class="lb" style="width:auto">数据</div>
+          <div class="hintline" id="statsLine"></div>
+        </div>
+        <div class="ctl">
+          <button class="btn" id="btnBackup" type="button">立即备份</button>
+          <button class="btn" id="btnDir" type="button">打开目录</button>
+        </div>
+      </div>
+
+      <div class="note">
+        未填答案的问题超过保留天数会自动折叠进「已放弃」——不删、不提醒、不考，可搜索找回。
+      </div>
+    </div>
+
+    <div class="foot">
+      <span class="hint" id="footHint">改动即时保存</span>
+      <span class="spacer"></span>
+      <button class="btn btn-primary" id="btnClose" type="button">关闭</button>
+    </div>
+  </div>
+</div>
+<script src="api.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

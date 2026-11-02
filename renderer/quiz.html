@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>日卷 · 回问</title>
+<link rel="stylesheet" href="app.css">
+<style>
+  .progress{
+    height: 2px; flex: none;
+    background: var(--line); border-radius: 2px; overflow: hidden;
+  }
+  .progress i{
+    display: block; height: 100%; width: 0;
+    background: var(--accent); border-radius: 2px;
+    transition: width 240ms var(--ease);
+  }
+
+  .stage{ flex: 1; min-height: 0; display: flex; flex-direction: column; gap: 14px; }
+  .stage[hidden]{ display: none; }
+
+  .q-top{ display: flex; align-items: flex-start; gap: 16px; flex: none; }
+  .q-num{
+    font-family: var(--mono); font-size: 11px; letter-spacing: .1em;
+    color: var(--text-4); flex: none; padding-top: 6px;
+  }
+  .q-text{
+    font-size: 19px; line-height: 1.5; font-weight: 500;
+    letter-spacing: -.015em; color: var(--text);
+    max-width: 46ch; user-select: text;
+  }
+
+  .answer{ flex: 1; min-height: 0; display: flex; }
+  .answer .field{ flex: 1; }
+
+  /* 加载态 */
+  .loading{
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 14px;
+  }
+  .loading[hidden]{ display: none; }
+  .loading .pulse{
+    width: 34px; height: 34px; border-radius: 50%;
+    border: 2px solid var(--line-2);
+    border-top-color: var(--accent);
+    animation: spin 900ms linear infinite;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+  .loading .txt{ font-size: 12.5px; color: var(--text-3); }
+  .loading .sub{ font-size: 11px; color: var(--text-4); font-family: var(--mono); }
+
+  .empty{
+    flex: 1; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 10px; text-align: center;
+  }
+  .empty[hidden]{ display: none; }
+  .empty .t{ font-size: 14px; color: var(--text-2); }
+  .empty .d{ font-size: 12px; color: var(--text-4); max-width: 34ch; line-height: 1.7; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="bar">
+    <span class="dot"></span>
+    <span class="title" id="barTitle">日卷</span>
+    <div class="right">
+      <span id="counter"></span>
+      <span class="dash"><i></i><i></i><i></i></span>
+    </div>
+  </div>
+
+  <div class="body">
+    <div class="progress"><i id="progressFill"></i></div>
+
+    <!-- 出卷中 -->
+    <div class="loading" id="loading">
+      <div class="pulse"></div>
+      <div class="txt">正在出卷…</div>
+      <div class="sub" id="loadingSub"></div>
+    </div>
+
+    <!-- 答题 -->
+    <div class="stage" id="stage" hidden>
+      <div class="q-top">
+        <span class="q-num" id="qNum">01</span>
+        <p class="q-text" id="qText"></p>
+      </div>
+
+      <div class="answer">
+        <textarea class="field" id="aInput" placeholder="写你的答案，想到多少写多少…" spellcheck="false"></textarea>
+      </div>
+
+      <div class="foot">
+        <span class="hint"><kbd>Ctrl</kbd><kbd>↵</kbd> <span id="hintText">下一题</span></span>
+        <span class="spacer"></span>
+        <button class="btn btn-ghost" id="btnSkip" type="button">这题跳过</button>
+        <button class="btn btn-primary" id="btnNext" type="button">下一题</button>
+      </div>
+    </div>
+
+    <!-- 空 -->
+    <div class="empty" id="empty" hidden>
+      <div class="t">没有可考的题</div>
+      <div class="d">先去记几道题，填上答案，晚上就有卷子了。</div>
+      <button class="btn" id="btnClose" type="button" style="margin-top:6px">关闭</button>
+    </div>
+  </div>
+</div>
+<script src="api.js"></script>
+<script src="quiz.js"></script>
+</body>
+</html>
